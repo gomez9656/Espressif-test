@@ -469,7 +469,8 @@ static void proxy_complete_pdu(struct bt_mesh_proxy_client *client)
     switch (client->msg_type) {
 #if defined(CONFIG_BLE_MESH_GATT_PROXY_SERVER)
     case BLE_MESH_PROXY_NET_PDU:
-        BT_DBG("Mesh Network PDU");
+        //BT_DBG("Mesh Network PDU");
+        BT_INFO("Mesh Network PDU");
         bt_mesh_net_recv(&client->buf, 0, BLE_MESH_NET_IF_PROXY);
         break;
     case BLE_MESH_PROXY_BEACON:
@@ -588,8 +589,11 @@ static void proxy_connected(struct bt_mesh_conn *conn, uint8_t err)
     struct bt_mesh_proxy_client *client = NULL;
     int i;
 
-    BT_DBG("conn %p err 0x%02x", conn, err);
+    BT_DBG("conn %p err 0x%02x", conn, err);//default line
 
+    BT_INFO("conn %p err 0x%02x", conn, err);  //changed line from BT_DBG to BT_INFO
+    
+    BT_WARN("conn %d err 0x%02x",conn->handle,err);
     conn_count++;
 
     /* Since we use ADV_OPT_ONE_TIME */
@@ -628,8 +632,11 @@ static void proxy_disconnected(struct bt_mesh_conn *conn, uint8_t reason)
 {
     int i;
 
-    BT_DBG("conn %p reason 0x%02x", conn, reason);
+    BT_DBG("conn %p reason 0x%02x", conn, reason);//defualt line
 
+    BT_INFO("conn %p reason 0x%02x", conn, reason); //changed line from BT_DBG to BT_INFO
+    
+    BT_WARN("conn %d reason 0x%02x", conn->handle, reason);
     conn_count--;
 
     for (i = 0; i < ARRAY_SIZE(clients); i++) {
@@ -988,7 +995,9 @@ bool bt_mesh_proxy_server_relay(struct net_buf_simple *buf, uint16_t dst)
     bool relayed = false;
     int i;
 
-    BT_DBG("%u bytes to dst 0x%04x", buf->len, dst);
+    //BT_DBG("%u bytes to dst 0x%04x", buf->len, dst);
+
+    BT_INFO("proxy_server_relay %u bytes to dst 0x%04x (proxy client)", buf->len, dst);
 
     for (i = 0; i < ARRAY_SIZE(clients); i++) {
         struct bt_mesh_proxy_client *client = &clients[i];
@@ -1461,7 +1470,8 @@ int bt_mesh_proxy_server_init(void)
 
     bt_mesh_gatts_conn_cb_register(&conn_callbacks);
 
-    strncpy(device_name, "ESP-BLE-MESH", DEVICE_NAME_SIZE);
+    //strncpy(device_name, "ESP-BLE-MESH", DEVICE_NAME_SIZE);
+    strncpy(device_name, "ESP-BLE-MESH-1", DEVICE_NAME_SIZE);
     return bt_mesh_gatts_set_local_device_name(device_name);
 }
 

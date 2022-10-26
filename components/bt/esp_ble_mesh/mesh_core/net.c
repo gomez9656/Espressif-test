@@ -915,7 +915,8 @@ int bt_mesh_net_send(struct bt_mesh_net_tx *tx, struct net_buf *buf,
     BT_DBG("src 0x%04x dst 0x%04x len %u headroom %u tailroom %u",
            tx->src, tx->ctx->addr, buf->len, net_buf_headroom(buf),
            net_buf_tailroom(buf));
-    BT_DBG("Payload len %u: %s", buf->len, bt_hex(buf->data, buf->len));
+    //BT_DBG("Payload len %u: %s", buf->len, bt_hex(buf->data, buf->len));
+    BT_INFO("Net send Payload len %u: %s", buf->len, bt_hex(buf->data, buf->len));
     BT_DBG("Seq 0x%06x", bt_mesh.seq);
 
     if (tx->ctx->send_ttl == BLE_MESH_TTL_DEFAULT) {
@@ -1225,8 +1226,11 @@ static void bt_mesh_net_relay(struct net_buf_simple *sbuf,
         return;
     }
 
-    BT_DBG("TTL %u CTL %u dst 0x%04x", rx->ctx.recv_ttl, rx->ctl,
-           rx->ctx.recv_dst);
+    //BT_DBG("TTL %u CTL %u dst 0x%04x", rx->ctx.recv_ttl, rx->ctl,
+    //       rx->ctx.recv_dst);
+    BT_INFO("TTL %u CTL %u dst 0x%04x", rx->ctx.recv_ttl, rx->ctl,
+            rx->ctx.recv_dst);
+
 
     /* The Relay Retransmit state is only applied to adv-adv relaying.
      * Anything else (like GATT to adv, or locally originated packets)
@@ -1275,7 +1279,8 @@ static void bt_mesh_net_relay(struct net_buf_simple *sbuf,
     priv = rx->sub->keys[rx->sub->kr_flag].privacy;
     nid = rx->sub->keys[rx->sub->kr_flag].nid;
 
-    BT_DBG("Relaying packet. TTL is now %u", TTL(buf->data));
+    //BT_DBG("Relaying packet. TTL is now %u", TTL(buf->data));
+    BT_INFO("Relaying packet. TTL is now %u", TTL(buf->data));
 
     /* Update NID if RX or RX was with friend credentials */
     if (rx->friend_cred) {
@@ -1305,6 +1310,7 @@ static void bt_mesh_net_relay(struct net_buf_simple *sbuf,
              rx->net_if == BLE_MESH_NET_IF_LOCAL)) {
         if (bt_mesh_proxy_server_relay(&buf->b, rx->ctx.recv_dst) &&
                 BLE_MESH_ADDR_IS_UNICAST(rx->ctx.recv_dst)) {
+                    BT_INFO("prox relay dst %d success,data: %s",rx->ctx.recv_dst,bt_hex(buf->data,buf->len));  
             goto done;
         }
     }
@@ -1312,6 +1318,7 @@ static void bt_mesh_net_relay(struct net_buf_simple *sbuf,
     if (relay_to_adv(rx->net_if)) {
 #if !defined(CONFIG_BLE_MESH_RELAY_ADV_BUF)
         bt_mesh_adv_send(buf, NULL, NULL);
+        BT_INFO("adv relay dst %d success,data: %s",rx->ctx.recv_dst,bt_hex(buf->data,buf->len));
 #else
         bt_mesh_relay_adv_send(buf, NULL, NULL, rx->ctx.addr, rx->ctx.recv_dst);
 #endif
@@ -1444,7 +1451,8 @@ void bt_mesh_net_recv(struct net_buf_simple *data, int8_t rssi,
     struct bt_mesh_net_rx rx = { .ctx.recv_rssi = rssi };
     struct net_buf_simple_state state = {0};
 
-    BT_DBG("rssi %d net_if %u", rssi, net_if);
+    //BT_DBG("rssi %d net_if %u", rssi, net_if);
+    BT_INFO("rssi %d net_if %u", rssi, net_if);
 
     if (!ready_to_recv()) {
         return;
@@ -1475,6 +1483,8 @@ void bt_mesh_net_recv(struct net_buf_simple *data, int8_t rssi,
         }
     }
 
+    BT_INFO("Net recv data: %s",bt_hex(buf.data,buf.len));
+
     /* The transport layer has indicated that it has rejected the message,
     * but would like to see it again if it is received in the future.
     * This can happen if a message is received when the device is in
@@ -1495,6 +1505,7 @@ void bt_mesh_net_recv(struct net_buf_simple *data, int8_t rssi,
     if (!BLE_MESH_ADDR_IS_UNICAST(rx.ctx.recv_dst) ||
             (!rx.local_match && !rx.friend_match)) {
         net_buf_simple_restore(&buf, &state);
+        BT_INFO("Relay msg to %d,buf: %s",rx.ctx.recv_dst,bt_hex(buf.data,buf.len));
         bt_mesh_net_relay(&buf, &rx);
     }
 }

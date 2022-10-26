@@ -122,7 +122,11 @@ static void dev_comp_data_get(struct bt_mesh_model *model,
 
     BT_DBG("net_idx 0x%04x app_idx 0x%04x src 0x%04x len %u: %s",
            ctx->net_idx, ctx->app_idx, ctx->addr, buf->len,
-           bt_hex(buf->data, buf->len));
+           bt_hex(buf->data, buf->len)); //defaukt line
+
+    BT_INFO("Comp data send net_idx 0x%04x app_idx 0x%04x src 0x%04x len %u: %s",
+           ctx->net_idx, ctx->app_idx, ctx->addr, buf->len,
+           bt_hex(buf->data, buf->len)); //changed line
 
     page = net_buf_simple_pull_u8(buf);
     if (page != 0U) {
@@ -3391,6 +3395,7 @@ static int cfg_srv_init(struct bt_mesh_model *model)
     cfg->model = model;
 
     conf = cfg;
+    BT_INFO("relay init %d ",conf->relay);
 
     return 0;
 }
@@ -3526,6 +3531,7 @@ void bt_mesh_heartbeat(uint16_t src, uint16_t dst, uint8_t hops, uint16_t feat)
 uint8_t bt_mesh_net_transmit_get(void)
 {
     if (conf) {
+        BT_INFO("Dect relay %d",conf->relay);
         return conf->net_transmit;
     }
 
